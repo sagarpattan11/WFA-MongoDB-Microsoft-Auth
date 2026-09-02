@@ -29,7 +29,7 @@ graph TD
         SocketEngine[Socket.IO Realtime Server]
     end
 
-    subgraph DataTier [Persistence & Audit Storage - Future Task 7+]
+    subgraph DataTier [Persistence & Audit Storage Layer]
         MongoCluster[(MongoDB Atlas / Enterprise Cluster)]
     end
 
