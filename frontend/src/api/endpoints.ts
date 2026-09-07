@@ -1,36 +1,45 @@
 export const API_ENDPOINTS = {
+  // Health
   HEALTH: '/health',
+
+  // Authentication & WebAuthn / Passkeys
   AUTH: {
-    MICROSOFT_LOGIN: '/auth/microsoft/login',
-    MICROSOFT_CALLBACK: '/auth/microsoft/callback',
+    REGISTER_CHALLENGE: '/auth/register-challenge',
+    REGISTER_VERIFY: '/auth/register-verify',
+    LOGIN_CHALLENGE: '/auth/login-challenge',
+    LOGIN_VERIFY: '/auth/login-verify',
     ME: '/auth/me',
     LOGOUT: '/auth/logout',
+    CREDENTIALS: '/auth/credentials',
+    RENAME_CREDENTIAL: (id: string) => `/auth/credentials/${id}`,
+    REVOKE_CREDENTIAL: (id: string) => `/auth/credentials/${id}`,
   },
+
+  // Employees
   EMPLOYEES: {
     LIST: '/employees',
     DETAIL: (id: string) => `/employees/${id}`,
+    CREATE: '/employees',
+    UPDATE: (id: string) => `/employees/${id}`,
+    UPDATE_STATUS: (id: string) => `/employees/${id}/status`,
+    RESTORE: (id: string) => `/employees/${id}/restore`,
+    DELETE: (id: string) => `/employees/${id}`,
   },
-  ATTENDANCE: {
-    LIST: '/attendance',
-    CLOCK: '/attendance/clock',
-    HISTORY: '/attendance/history',
-    CORRECTIONS: '/attendance/corrections',
+
+  // Departments & Teams
+  DEPARTMENTS: {
+    LIST: '/departments',
+    CREATE: '/departments',
+    UPDATE: (id: string) => `/departments/${id}`,
   },
-  ABSENCE: {
-    LIST: '/absence',
-    REQUEST: '/absence/request',
+  TEAMS: {
+    LIST: '/teams',
+    CREATE: '/teams',
   },
-  SCHEDULING: {
-    SHIFTS: '/scheduling/shifts',
-    SWAPS: '/scheduling/swaps',
-  },
-  ANALYTICS: {
-    SUMMARY: '/analytics/summary',
-  },
-  COMPLIANCE: {
-    AUDIT: '/compliance/audit',
-  },
-  PAYROLL: {
-    SUMMARY: '/payroll/summary',
+
+  // Dashboard Telemetry & Charts
+  DASHBOARD: {
+    KPIS: '/dashboard/kpis',
+    CHARTS: '/dashboard/charts',
   },
 } as const;

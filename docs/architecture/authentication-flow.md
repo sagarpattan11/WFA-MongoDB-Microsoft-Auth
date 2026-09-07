@@ -1,52 +1,89 @@
-# Microsoft Entra ID Authentication Flow Specification
+# WebAuthn / Passkey & FIDO2 Authentication Flow Specification
 
 ## 1. Overview & Zero-Trust Principles
 
-The Workforce Analytics Platform relies strictly on **Microsoft Entra ID** (formerly Azure Active Directory) for enterprise identity and access management. 
+The Workforce Analytics Platform relies on **FIDO2 WebAuthn / Passkeys** for passwordless, cryptographically verified enterprise authentication.
 
 ### Core Security Mandates:
-- **No Local Password Collection**: The application provides no password input forms and stores zero user passwords.
-- **Passwordless & MFA Controlled by Microsoft**: All authentication factors (Windows Hello, FIDO2 Passkeys, Microsoft Authenticator, MFA push) are enforced directly within Entra ID.
-- **No Tokens in LocalStorage**: Access tokens and refresh tokens are strictly held in secure, encrypted HTTP-only session cookies and backend memory; never in browser `localStorage` or `sessionStorage`.
-- **Zero Mock Authentication**: No fake login states or simulated identities. The initial implementation provides the configuration-guarded Entra ID sign-in entry shell.
+- **Zero Password Storage**: The application provides no password input forms and stores zero passwords or hashes.
+- **Biometric & PIN Privacy**: Fingerprints, FaceID scans, Windows Hello PINs, and private keys **never leave the user's physical device**. Only public keys, credential IDs, and signature counters are stored in MongoDB.
+- **Phishing Resistance**: Challenges are cryptographically bound to the Relying Party ID (`RP_ID`), preventing adversary-in-the-middle phishing attacks.
+- **Replay Protection**: Cryptographic signature counters are monotonically verified on every login.
+- **No Tokens in LocalStorage**: Authentication sessions are secured via HttpOnly, encrypted cookies backed by MongoDB session storage.
 
 ---
 
-## 2. End-to-End Sequence Diagram
+## 2. End-to-End Sequence Diagrams
+
+### A. Passkey Registration Ceremony
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as Enterprise User
-    participant Browser as React Frontend
-    participant Backend as Express API Server
-    participant Entra as Microsoft Entra ID
+    participant Browser as Client Browser (WebAuthn API)
+    participant Backend as Express API Server (@simplewebauthn/server)
     participant DB as MongoDB Persistence
 
-    User->>Browser: Clicks "Sign in with Microsoft"
-    Browser->>Backend: GET /api/v1/auth/microsoft/login
-    Note over Backend: Generates PKCE code_verifier, code_challenge, state & nonce
-    Backend-->>Browser: 302 Redirect to Microsoft Authorization URL
-    Browser->>Entra: Navigates to login.microsoftonline.com
-    Note over Entra,User: User completes SSO, MFA, Authenticator, or Passkey prompt
-    Entra-->>Browser: 302 Redirect to /auth/callback?code=...&state=...
-    Browser->>Backend: POST /api/v1/auth/microsoft/callback (code, state)
-    Note over Backend: Validates state & PKCE verifier against session
-    Backend->>Entra: POST /oauth2/v2.0/token (Exchange auth code for tokens)
-    Entra-->>Backend: Returns id_token, access_token
-    Note over Backend: Validates id_token signature, claims, tenant, & allowed email domain
-    Backend->>DB: Find or provision user account & sync RBAC roles
-    DB-->>Backend: User profile record
-    Note over Backend: Creates encrypted session cookie (HttpOnly, Secure, SameSite=Lax)
-    Backend-->>Browser: 200 OK + Set-Cookie: wfa_session=... + User Profile
-    Browser->>Browser: Update Auth Redux State & navigate to Role Dashboard
+    User->>Browser: Enters corporate username & email -> Clicks "Register Passkey"
+    Browser->>Backend: POST /api/v1/auth/register-challenge { username, email }
+    Note over Backend: Generates cryptographic challenge & RP options
+    Backend->>DB: Stores temporary challenge in user identity
+    Backend-->>Browser: 200 OK + PublicKeyCredentialCreationOptions
+    Browser->>User: Prompts Windows Hello / Touch ID / Security Key
+    User->>Browser: Authorizes with Biometric, PIN, or Hardware Key
+    Note over Browser: Authenticator generates asymmetric keypair (Public/Private)
+    Browser->>Backend: POST /api/v1/auth/register-verify { response: RegistrationResponseJSON }
+    Note over Backend: Cryptographically verifies attestation signature against challenge & RP_ID
+    Backend->>DB: Saves credentialID, public key buffer, counter, and device metadata
+    Backend-->>Browser: 200 OK + Set-Cookie: wfa_session + User Profile
+    Browser->>Browser: Sets Redux Auth State & redirects to Dashboard
 ```
 
 ---
 
-## 3. Configuration & Fallback States
+### B. Passkey Authentication (Login) Ceremony
 
-When Microsoft Entra ID environment variables are not yet populated in `.env`:
-- The frontend displays a clean, disabled SSO button shell indicating **"Microsoft Entra ID configuration pending"**.
-- Direct API calls to auth endpoints return a descriptive JSON error explaining missing credentials.
-- Zero local password fallback is allowed.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Enterprise User
+    participant Browser as Client Browser (WebAuthn API)
+    participant Backend as Express API Server (@simplewebauthn/server)
+    participant DB as MongoDB Persistence
+
+    User->>Browser: Clicks "Sign In with Passkey / Security Key"
+    Browser->>Backend: POST /api/v1/auth/login-challenge
+    Note over Backend: Generates challenge & authentication options
+    Backend-->>Browser: 200 OK + PublicKeyCredentialRequestOptions
+    Browser->>User: Prompts Windows Hello / Touch ID / FIDO2 Key
+    User->>Browser: Authorizes biometric / PIN
+    Note over Browser: Authenticator signs challenge using stored Private Key
+    Browser->>Backend: POST /api/v1/auth/login-verify { response: AuthenticationResponseJSON }
+    Backend->>DB: Retrieves Public Key by credentialID
+    DB-->>Backend: Passkey record (Public Key & Counter)
+    Note over Backend: Cryptographically verifies signature & counter increment
+    Backend->>DB: Updates counter & lastUsedAt timestamp; logs audit event
+    Backend-->>Browser: 200 OK + Set-Cookie: wfa_session + User Profile
+    Browser->>Browser: Establishes session & navigates to Dashboard
+```
+
+---
+
+## 3. Platform & Hardware Compatibility Matrix
+
+| Operating System | Supported Authenticators | Supported Browsers | Notes |
+| :--- | :--- | :--- | :--- |
+| **Windows 10 / 11** | Windows Hello (Fingerprint, Face, PIN), YubiKey USB/NFC | Chrome, Edge, Firefox, Brave | Windows Hello platform authenticator built-in. |
+| **macOS (Ventura+)** | Touch ID, Apple Watch, YubiKey USB/NFC | Safari, Chrome, Edge, Firefox | Cross-device passkeys synced via iCloud Keychain. |
+| **iOS / iPadOS (16+)** | Face ID, Touch ID, NFC Security Keys | Safari, Chrome | Hardware security key via Lightning/USB-C/NFC. |
+| **Android (9+)** | Screen Lock (Fingerprint, Face, PIN), FIDO2 NFC | Chrome, Edge, Firefox | Google Password Manager syncs passkeys across devices. |
+| **Linux** | YubiKey, Nitrokey, SoloKey USB/NFC | Chrome, Firefox, Chromium | Requires `libfido2` / `udev` rules for USB access. |
+
+---
+
+## 4. Audit Logging & Security Operations
+
+All authentication events are logged into the `AuthAuditLog` collection in MongoDB:
+- Event types: `register_challenge`, `register_success`, `register_failure`, `login_challenge`, `login_success`, `login_failure`, `logout`, `credential_rename`, `credential_revoke`.
+- Audit metadata: `userId`, `username`, `ipAddress`, `userAgent`, `timestamp`, `failureReason`.
