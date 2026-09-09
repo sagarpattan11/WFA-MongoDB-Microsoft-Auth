@@ -23,6 +23,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -75,6 +76,7 @@ export const EmployeesPage: React.FC = () => {
   const [selectedDept, setSelectedDept] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -124,7 +126,7 @@ export const EmployeesPage: React.FC = () => {
     try {
       const params: Record<string, string | number> = {
         page,
-        limit: 10,
+        limit: pageSize,
       };
       if (searchQuery.trim()) params.q = searchQuery.trim();
       if (selectedDept) params.departmentId = selectedDept;
@@ -140,7 +142,7 @@ export const EmployeesPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, selectedDept, selectedStatus]);
+  }, [page, pageSize, searchQuery, selectedDept, selectedStatus]);
 
   useEffect(() => {
     loadMetadata();
@@ -264,41 +266,109 @@ export const EmployeesPage: React.FC = () => {
     {
       id: 'employeeId',
       header: 'ID',
-      width: 110,
+      width: 150,
       accessor: (row) => (
-        <Typography variant="body2" fontWeight={600} color="primary.main">
-          {row.employeeId}
-        </Typography>
+        <Tooltip title={`Employee Identifier: ${row.employeeId}`} arrow placement="top">
+          <Typography variant="body2" fontWeight={600} color="primary.main">
+            {row.employeeId}
+          </Typography>
+        </Tooltip>
       ),
     },
     {
       id: 'name',
       header: 'Employee Name',
-      accessor: (row) => (
-        <Box>
-          <Typography variant="body2" fontWeight={600}>
-            {row.firstName} {row.lastName}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {row.email}
-          </Typography>
-        </Box>
-      ),
+      maxWidth: 220,
+      accessor: (row) => {
+        const fullName = `${row.firstName} ${row.lastName}`;
+        return (
+          <Box sx={{ maxWidth: 220 }}>
+            <Tooltip title={fullName} arrow placement="top" enterDelay={250}>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {fullName}
+              </Typography>
+            </Tooltip>
+            <Tooltip title={row.email} arrow placement="top" enterDelay={250}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  display: 'block',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {row.email}
+              </Typography>
+            </Tooltip>
+          </Box>
+        );
+      },
     },
     {
       id: 'department',
       header: 'Department',
-      accessor: (row) => row.departmentId?.name || '—',
+      maxWidth: 180,
+      accessor: (row) => {
+        const deptName = row.departmentId?.name || '—';
+        return (
+          <Tooltip title={`Department: ${deptName}`} arrow placement="top" enterDelay={250}>
+            <Typography
+              variant="body2"
+              sx={{
+                maxWidth: 180,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {deptName}
+            </Typography>
+          </Tooltip>
+        );
+      },
     },
     {
       id: 'jobTitle',
       header: 'Job Title',
+      maxWidth: 220,
       accessor: (row) => (
-        <Box>
-          <Typography variant="body2">{row.jobTitle}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {row.location} • {row.employmentType}
-          </Typography>
+        <Box sx={{ maxWidth: 220 }}>
+          <Tooltip title={`Role: ${row.jobTitle}`} arrow placement="top" enterDelay={250}>
+            <Typography
+              variant="body2"
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {row.jobTitle}
+            </Typography>
+          </Tooltip>
+          <Tooltip title={`Location: ${row.location} | Type: ${row.employmentType}`} arrow placement="top" enterDelay={250}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'block',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {row.location} • {row.employmentType}
+            </Typography>
+          </Tooltip>
         </Box>
       ),
     },
@@ -520,8 +590,12 @@ export const EmployeesPage: React.FC = () => {
         page={page}
         totalPages={totalPages}
         totalItems={totalCount}
-        pageSize={10}
+        pageSize={pageSize}
         onPageChange={setPage}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setPage(1);
+        }}
       />
 
       {/* Add / Edit Employee Modal */}

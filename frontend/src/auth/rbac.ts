@@ -20,9 +20,33 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'payroll:view',
     'payroll:manage',
     'analytics:view',
+    'skills:view',
+    'skills:manage',
     'report:export',
     'audit:view',
     'settings:manage',
+  ],
+  hr_manager: [
+    'employee:view',
+    'employee:create',
+    'employee:update',
+    'employee:delete',
+    'attendance:view',
+    'attendance:manage',
+    'attendance:clock',
+    'leave:view',
+    'leave:request',
+    'leave:review',
+    'schedule:view',
+    'schedule:manage',
+    'compliance:view',
+    'compliance:review',
+    'payroll:view',
+    'payroll:manage',
+    'analytics:view',
+    'skills:view',
+    'skills:manage',
+    'report:export',
   ],
   hr: [
     'employee:view',
@@ -41,6 +65,38 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'payroll:view',
     'payroll:manage',
     'analytics:view',
+    'skills:view',
+    'skills:manage',
+    'report:export',
+  ],
+  executive: [
+    'employee:view',
+    'attendance:view',
+    'leave:view',
+    'schedule:view',
+    'compliance:view',
+    'payroll:view',
+    'analytics:view',
+    'skills:view',
+    'report:export',
+    'audit:view',
+  ],
+  dept_manager: [
+    'employee:view',
+    'employee:update',
+    'attendance:view',
+    'attendance:manage',
+    'attendance:clock',
+    'leave:view',
+    'leave:request',
+    'leave:review',
+    'schedule:view',
+    'schedule:manage',
+    'schedule:swap',
+    'compliance:view',
+    'analytics:view',
+    'skills:view',
+    'skills:manage',
     'report:export',
   ],
   manager: [
@@ -56,7 +112,21 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'schedule:swap',
     'compliance:view',
     'analytics:view',
+    'skills:view',
     'report:export',
+  ],
+  team_lead: [
+    'employee:view',
+    'attendance:view',
+    'attendance:manage',
+    'attendance:clock',
+    'leave:view',
+    'leave:request',
+    'schedule:view',
+    'schedule:manage',
+    'schedule:swap',
+    'analytics:view',
+    'skills:view',
   ],
   'team-lead': [
     'employee:view',
@@ -69,6 +139,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'schedule:manage',
     'schedule:swap',
     'analytics:view',
+    'skills:view',
   ],
   employee: [
     'attendance:clock',
@@ -78,6 +149,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'schedule:view',
     'schedule:swap',
     'payroll:view',
+    'skills:view',
   ],
 };
 
@@ -93,7 +165,6 @@ export const hasAnyRole = (user: UserProfile | null, roles: UserRole[]): boolean
 
 export const hasPermission = (user: UserProfile | null, permission: Permission): boolean => {
   if (!user) return false;
-  // If user has direct permission list or inherits from their roles
   if (user.permissions && user.permissions.includes(permission)) return true;
   return user.roles.some((role) => ROLE_PERMISSIONS[role]?.includes(permission));
 };

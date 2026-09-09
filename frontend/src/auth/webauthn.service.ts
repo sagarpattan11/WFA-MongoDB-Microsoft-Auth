@@ -42,13 +42,15 @@ export const registerWithPasskey = async (
   username: string,
   email: string,
   displayName?: string,
-  friendlyName?: string
+  friendlyName?: string,
+  role?: string
 ): Promise<UserSessionData> => {
   // 1. Request registration options from backend
   const optionsRes = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER_CHALLENGE, {
     username,
     email,
     displayName,
+    role,
   });
 
   const options = optionsRes.data.data;

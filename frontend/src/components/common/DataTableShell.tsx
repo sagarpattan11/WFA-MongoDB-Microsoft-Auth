@@ -6,6 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
 import { EmptyState } from '../feedback/EmptyState';
 import { ErrorState } from '../feedback/ErrorState';
@@ -15,9 +16,13 @@ import { AppPagination } from './AppPagination';
 export interface ColumnDef<T> {
   id: string;
   header: string;
+  headerTooltip?: string;
   accessor?: (row: T) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
   width?: string | number;
+  maxWidth?: string | number;
+  truncate?: boolean;
+  tooltip?: boolean | ((row: T) => React.ReactNode);
 }
 
 export interface DataTableShellProps<T> {
@@ -32,7 +37,9 @@ export interface DataTableShellProps<T> {
   totalPages?: number;
   totalItems?: number;
   pageSize?: number;
+  pageSizeOptions?: number[];
   onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
   keyExtractor?: (row: T, index: number) => string | number;
   onRowClick?: (row: T) => void;
 }
@@ -49,7 +56,9 @@ export const DataTableShell = <T extends Record<string, unknown>>({
   totalPages,
   totalItems,
   pageSize,
+  pageSizeOptions,
   onPageChange,
+  onPageSizeChange,
   keyExtractor,
   onRowClick,
 }: DataTableShellProps<T>) => {
@@ -65,21 +74,89 @@ export const DataTableShell = <T extends Record<string, unknown>>({
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
 
+  const renderCellContent = (rawContent: React.ReactNode, col: ColumnDef<T>, row: T) => {
+    // Custom tooltip function provided in column definition
+    if (typeof col.tooltip === 'function') {
+      const customTooltip = col.tooltip(row);
+      if (customTooltip) {
+        return (
+          <Tooltip title={customTooltip} arrow placement="top" enterDelay={200} disableInteractive>
+            <Box
+              component="span"
+              sx={{
+                display: 'inline-block',
+                maxWidth: col.maxWidth || 240,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                verticalAlign: 'bottom',
+                cursor: 'default',
+              }}
+            >
+              {rawContent}
+            </Box>
+          </Tooltip>
+        );
+      }
+    }
+
+    // Auto tooltip for string/numeric cell content that exceeds standard length or has explicit truncate/maxWidth
+    if (typeof rawContent === 'string' || typeof rawContent === 'number') {
+      const text = String(rawContent);
+      const isLongText = text.length > 18 || col.truncate || Boolean(col.maxWidth) || col.tooltip === true;
+
+      if (isLongText) {
+        return (
+          <Tooltip title={text} arrow placement="top" enterDelay={200} disableInteractive>
+            <Box
+              component="span"
+              sx={{
+                display: 'inline-block',
+                maxWidth: col.maxWidth || 240,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                verticalAlign: 'bottom',
+                cursor: 'default',
+              }}
+            >
+              {text}
+            </Box>
+          </Tooltip>
+        );
+      }
+      return text;
+    }
+
+    return rawContent;
+  };
+
   return (
     <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
       <TableContainer sx={{ maxHeight: 600 }}>
         <Table stickyHeader aria-label="Enterprise Data Table">
           <TableHead>
             <TableRow>
-              {columns.map((col) => (
-                <TableCell
-                  key={col.id}
-                  align={col.align || 'left'}
-                  sx={{ width: col.width, fontWeight: 600, bgcolor: 'background.paper' }}
-                >
-                  {col.header}
-                </TableCell>
-              ))}
+              {columns.map((col) => {
+                const headerContent = (
+                  <TableCell
+                    key={col.id}
+                    align={col.align || 'left'}
+                    sx={{ width: col.width, fontWeight: 600, bgcolor: 'background.paper' }}
+                  >
+                    {col.headerTooltip ? (
+                      <Tooltip title={col.headerTooltip} arrow placement="top" enterDelay={200}>
+                        <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted currentColor' }}>
+                          {col.header}
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      col.header
+                    )}
+                  </TableCell>
+                );
+                return headerContent;
+              })}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -92,11 +169,14 @@ export const DataTableShell = <T extends Record<string, unknown>>({
                   onClick={() => onRowClick?.(row)}
                   sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
                 >
-                  {columns.map((col) => (
-                    <TableCell key={col.id} align={col.align || 'left'}>
-                      {col.accessor ? col.accessor(row) : (row[col.id] as React.ReactNode)}
-                    </TableCell>
-                  ))}
+                  {columns.map((col) => {
+                    const rawContent = col.accessor ? col.accessor(row) : (row[col.id] as React.ReactNode);
+                    return (
+                      <TableCell key={col.id} align={col.align || 'left'}>
+                        {renderCellContent(rawContent, col, row)}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               );
             })}
@@ -111,7 +191,9 @@ export const DataTableShell = <T extends Record<string, unknown>>({
             totalPages={totalPages}
             totalItems={totalItems}
             pageSize={pageSize}
+            pageSizeOptions={pageSizeOptions}
             onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
           />
         </Box>
       )}

@@ -1,4 +1,13 @@
-export type UserRole = 'admin' | 'hr' | 'manager' | 'team-lead' | 'employee';
+export type UserRole =
+  | 'admin'
+  | 'hr_manager'
+  | 'hr'
+  | 'executive'
+  | 'dept_manager'
+  | 'manager'
+  | 'team_lead'
+  | 'team-lead'
+  | 'employee';
 
 export type Permission =
   | 'employee:view'
@@ -19,6 +28,8 @@ export type Permission =
   | 'payroll:view'
   | 'payroll:manage'
   | 'analytics:view'
+  | 'skills:view'
+  | 'skills:manage'
   | 'report:export'
   | 'audit:view'
   | 'settings:manage';
