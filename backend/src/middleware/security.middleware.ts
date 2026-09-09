@@ -17,21 +17,15 @@ export const helmetMiddleware = helmet({
   crossOriginEmbedderPolicy: false,
 });
 
-// Strict CORS middleware with credentials support
+// Strict CORS middleware with credentials support & multi-port localhost allowance
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = [
-      env.CORS_ORIGIN,
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173',
-    ];
+    const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
-    if (allowedOrigins.includes(origin) || env.NODE_ENV === 'development') {
+    if (isLocalhost || origin === env.CORS_ORIGIN || env.NODE_ENV === 'development') {
       return callback(null, true);
     }
 
@@ -39,13 +33,23 @@ export const corsMiddleware = cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'X-Client-Timestamp',
+    'x-client-timestamp',
+    'X-Request-Id',
+    'x-request-id',
+  ],
+  exposedHeaders: ['Set-Cookie'],
 });
 
 // Standard Rate Limiter for general API routes
 export const apiRateLimiter: RequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP to 1000 requests per 15 minutes
+  max: 2000, // Limit each IP to 2000 requests per 15 minutes in dev
   standardHeaders: true,
   legacyHeaders: false,
   message: {
