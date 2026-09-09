@@ -21,7 +21,7 @@ sequenceDiagram
     participant Browser as React Frontend
     participant Backend as Express API Server
     participant Entra as Microsoft Entra ID
-    participant DB as MongoDB (Task 7+)
+    participant DB as MongoDB Persistence
 
     User->>Browser: Clicks "Sign in with Microsoft"
     Browser->>Backend: GET /api/v1/auth/microsoft/login

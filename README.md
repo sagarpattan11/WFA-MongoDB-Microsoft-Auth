@@ -117,20 +117,20 @@ Copy the `.env.example` template to `.env` in the root (or frontend/backend dire
 cp .env.example .env
 ```
 
-| Variable | Description | Stage Active |
+| Variable | Description | Status |
 | :--- | :--- | :--- |
-| `NODE_ENV` | Runtime environment (`development`, `production`, `test`) | Task 1+ |
-| `FRONTEND_PORT` | Port for the Vite dev server (default: `3000`) | Task 1+ |
-| `BACKEND_PORT` | Port for the Express API server (default: `5000`) | Task 1+ |
-| `VITE_API_BASE_URL` | Base API URL for frontend HTTP client (`http://localhost:5000/api/v1`) | Task 1+ |
-| `VITE_SOCKET_URL` | Socket.IO server URL (`http://localhost:5000`) | Task 1+ |
-| `MONGODB_URI` | Connection URI for MongoDB cluster | Task 7+ |
-| `MICROSOFT_CLIENT_ID` | Entra ID App Client ID | Task 9+ |
-| `MICROSOFT_CLIENT_SECRET` | Entra ID Client Secret | Task 9+ |
-| `MICROSOFT_TENANT_ID` | Entra ID Tenant ID | Task 9+ |
-| `MICROSOFT_REDIRECT_URI` | Entra ID OAuth Redirect URI | Task 9+ |
-| `MICROSOFT_POST_LOGOUT_REDIRECT_URI`| Entra ID Post-Logout Redirect URI | Task 9+ |
-| `SESSION_SECRET` | Secret key used for cryptographic session cookies | Task 9+ |
+| `NODE_ENV` | Runtime environment (`development`, `production`, `test`) | Active |
+| `FRONTEND_PORT` | Port for the Vite dev server (default: `3000`) | Active |
+| `BACKEND_PORT` | Port for the Express API server (default: `5000`) | Active |
+| `VITE_API_BASE_URL` | Base API URL for frontend HTTP client (`http://localhost:5000/api/v1`) | Active |
+| `VITE_SOCKET_URL` | Socket.IO server URL (`http://localhost:5000`) | Active |
+| `MONGODB_URI` | Connection URI for MongoDB cluster | Configured |
+| `MICROSOFT_CLIENT_ID` | Entra ID App Client ID | Configured |
+| `MICROSOFT_CLIENT_SECRET` | Entra ID Client Secret | Configured |
+| `MICROSOFT_TENANT_ID` | Entra ID Tenant ID | Configured |
+| `MICROSOFT_REDIRECT_URI` | Entra ID OAuth Redirect URI | Configured |
+| `MICROSOFT_POST_LOGOUT_REDIRECT_URI`| Entra ID Post-Logout Redirect URI | Configured |
+| `SESSION_SECRET` | Secret key used for cryptographic session cookies | Configured |
 
 > ⚠️ **Security Notice**: Never commit `.env` files, production tokens, client secrets, or credentials to version control.
 
@@ -192,29 +192,29 @@ To verify backend server health:
 
 ---
 
-## 📊 Current Task Status (Day 1 & Day 2)
+## 📊 Foundation Deliverables & Modules
 
-- [x] **Task 1: Project Setup & Monorepo Foundation**
+- [x] **Project Setup & Monorepo Foundation**
   - Git repository initialized with `main`, `develop`, and `feature/sagar-day1-day2-foundation` branches.
   - Root configuration, scripts, `.gitignore`, `.env.example`, `LICENSE`, and `README.md`.
   - Frontend React 18 + Vite + TypeScript strict mode + centralized Axios client.
   - Backend Express + TypeScript + Zod validation + Helmet + CORS + `/api/v1/health`.
   - Global application feedback states & React Error Boundary.
-- [x] **Task 2: Architecture & Design System**
+- [x] **Architecture & Design System**
   - Complete architecture documentation in `docs/architecture/`.
   - Microsoft Entra ID authentication flow architecture defined.
   - Centralized RBAC model (Admin, HR, Manager, Team Lead, Employee).
   - Design tokens, Light & Dark themes, and responsive theme switcher.
   - Accessible, WCAG-compliant reusable component library.
-- [x] **Task 3: Enterprise Layout**
+- [x] **Enterprise Layout**
   - Responsive App Shell (Collapsible Sidebar, Header, Breadcrumbs, User Profile).
   - Feedback screens (403 Forbidden, 404 Not Found, 500 Server Error, Network Error).
-- [x] **Task 4: Routes & Navigation**
+- [x] **Routes & Navigation**
   - Centralized route registry with RBAC metadata and route guards.
   - Role dashboard page shells (`/admin/dashboard`, `/hr/dashboard`, `/manager/dashboard`, etc.).
   - Core module page shells (Employees, Attendance, Absence, Scheduling, Analytics, Compliance, Payroll, Reports, Settings).
 - [x] **Testing & Verification**
-  - Vitest test suites configured and passing.
+  - Vitest test suites configured and passing (18/18 tests).
   - `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` passing cleanly.
 
 ---
