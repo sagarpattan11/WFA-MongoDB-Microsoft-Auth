@@ -20,7 +20,7 @@ export interface IPlacement extends Document {
 
 const PlacementSchema = new Schema<IPlacement>(
   {
-    candidateId: { type: String, required: true, unique: true, trim: true },
+    candidateId: { type: String, required: true, trim: true },
     candidateName: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
     department: { type: String, required: true, trim: true },

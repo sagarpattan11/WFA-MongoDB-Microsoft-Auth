@@ -22,4 +22,16 @@ describe('Employee & Dashboard API Protection', () => {
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
   });
+
+  it('POST /api/v1/employees/import requires authentication session', async () => {
+    const res = await request(app).post('/api/v1/employees/import').send({ employees: [] });
+    expect(res.status).toBe(401);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('GET /api/v1/employees/export requires authentication session', async () => {
+    const res = await request(app).get('/api/v1/employees/export');
+    expect(res.status).toBe(401);
+    expect(res.body.success).toBe(false);
+  });
 });

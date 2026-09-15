@@ -96,6 +96,16 @@ export const getSkillAnalyticsOverviewHandler = async (_req: Request, res: Respo
       count,
     }));
 
+    let totalProficiencySum = 0;
+    let totalRatingsCount = 0;
+    Object.values(skillProficiencyMap).forEach((val) => {
+      totalProficiencySum += val.totalProficiency;
+      totalRatingsCount += val.count;
+    });
+    const avgWorkforceProf = totalRatingsCount > 0
+      ? Number((totalProficiencySum / totalRatingsCount).toFixed(1))
+      : 3.8;
+
     sendSuccess(
       res,
       {
@@ -104,7 +114,7 @@ export const getSkillAnalyticsOverviewHandler = async (_req: Request, res: Respo
           certifiedEmployeesCount: certifiedCount,
           certifiedPercentage,
           criticalSkillGapsCount: missingOrCriticalGaps.length,
-          averageWorkforceProficiency: 3.8,
+          averageWorkforceProficiency: avgWorkforceProf,
         },
         categoryDistribution,
         topSkills,
@@ -124,13 +134,13 @@ export const getSkillGapsHandler = async (_req: Request, res: Response): Promise
       EmployeeModel.find({ isDeleted: false }).populate('departmentId', 'name code'),
     ]);
 
-    const deptMap: Record<string, { requiredTotal: number; availableTotal: number; count: number }> = {};
+    const deptMap: Record<string, { requiredTotal: number; skillCount: number; availableTotal: number; ratingCount: number }> = {};
 
     skills.forEach((sk) => {
       const dept = sk.department || 'General';
-      const entry = deptMap[dept] ?? { requiredTotal: 0, availableTotal: 0, count: 0 };
+      const entry = deptMap[dept] ?? { requiredTotal: 0, skillCount: 0, availableTotal: 0, ratingCount: 0 };
       entry.requiredTotal += sk.industryBenchmarkLevel;
-      entry.count++;
+      entry.skillCount++;
       deptMap[dept] = entry;
     });
 
@@ -138,19 +148,25 @@ export const getSkillGapsHandler = async (_req: Request, res: Response): Promise
     employees.forEach((emp) => {
       const deptName = (emp.departmentId as unknown as { name?: string })?.name || 'Engineering & Technology';
       const entry = deptMap[deptName];
-      if (entry && emp.skills) {
+      if (entry && emp.skills && Array.isArray(emp.skills)) {
         emp.skills.forEach((sk) => {
-          entry.availableTotal += sk.proficiencyLevel;
+          if (sk.proficiencyLevel) {
+            entry.availableTotal += sk.proficiencyLevel;
+            entry.ratingCount++;
+          }
         });
       }
     });
 
     // Radar & Bar chart datasets
     const gapAnalysis = Object.entries(deptMap).map(([dept, data]) => {
-      const reqAvg = data.count > 0 ? Number((data.requiredTotal / data.count).toFixed(1)) : 4.0;
-      const availAvg = data.count > 0 && data.availableTotal > 0
-        ? Number((data.availableTotal / (data.count * 3)).toFixed(1))
-        : 2.8;
+      const reqAvg = data.skillCount > 0 ? Number((data.requiredTotal / data.skillCount).toFixed(1)) : 4.0;
+      let availAvg = data.ratingCount > 0
+        ? Number((data.availableTotal / data.ratingCount).toFixed(1))
+        : 3.5;
+
+      // Ensure strictly on 1.0 to 5.0 scale
+      availAvg = Number(Math.min(5.0, Math.max(1.0, availAvg)).toFixed(1));
       const gap = Number(Math.max(0, reqAvg - availAvg).toFixed(1));
       const coverageRate = Math.min(100, Math.round((availAvg / reqAvg) * 100));
 

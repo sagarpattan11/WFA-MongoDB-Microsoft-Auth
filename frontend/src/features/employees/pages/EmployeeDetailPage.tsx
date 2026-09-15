@@ -215,7 +215,7 @@ export const EmployeeDetailPage: React.FC = () => {
                         Hire Date
                       </Typography>
                       <Typography variant="body1" fontWeight={600}>
-                        {new Date(employee.hireDate).toLocaleDateString()}
+                        {employee.hireDate ? new Date(employee.hireDate).toLocaleDateString() : '—'}
                       </Typography>
                     </Box>
                   </Box>

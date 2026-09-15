@@ -33,7 +33,7 @@ const getDeviceFriendlyName = (req: Request): string => {
 export const registerChallengeHandler = async (req: Request, res: Response): Promise<void> => {
   const { ipAddress, userAgent } = getClientInfo(req);
   try {
-    const { username, email, displayName, role } = req.body;
+    const { username, email, displayName } = req.body;
 
     if (!username || !email) {
       sendError(res, 'Username and corporate email are required.', 400);
@@ -43,10 +43,6 @@ export const registerChallengeHandler = async (req: Request, res: Response): Pro
     const cleanUsername = String(username).toLowerCase().trim();
     const cleanEmail = String(email).toLowerCase().trim();
     const cleanDisplayName = displayName ? String(displayName).trim() : cleanUsername;
-
-    const assignedRoles = role
-      ? [String(role), 'employee']
-      : ['admin', 'hr_manager', 'hr', 'manager', 'dept_manager', 'team_lead', 'team-lead', 'employee'];
 
     // Check if user already exists, or prepare for new user creation
     let user = await UserModel.findOne({
@@ -58,10 +54,8 @@ export const registerChallengeHandler = async (req: Request, res: Response): Pro
         username: cleanUsername,
         email: cleanEmail,
         displayName: cleanDisplayName,
-        roles: assignedRoles,
+        roles: ['employee'],
       });
-    } else if (role) {
-      user.roles = assignedRoles as unknown as ('admin' | 'hr_manager' | 'hr' | 'executive' | 'dept_manager' | 'manager' | 'team_lead' | 'team-lead' | 'employee')[];
     }
 
     // Retrieve existing passkeys for this user to avoid duplicate registrations on same authenticator
@@ -591,5 +585,103 @@ export const revokeCredentialHandler = async (req: Request, res: Response): Prom
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     sendError(res, 'Failed to revoke credential.', 500, 'REVOKE_ERROR', errMsg);
+  }
+};
+
+/**
+ * 10. Admin: List All User Accounts (`GET /api/v1/auth/users`)
+ */
+export const listUsersHandler = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await UserModel.find()
+      .select('_id username email displayName roles createdAt updatedAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const userIds = users.map((u) => u._id);
+    const passkeyCounts = await PasskeyModel.aggregate([
+      { $match: { userId: { $in: userIds } } },
+      { $group: { _id: '$userId', count: { $sum: 1 } } },
+    ]);
+
+    const countMap: Record<string, number> = {};
+    passkeyCounts.forEach((pk) => {
+      countMap[String(pk._id)] = pk.count;
+    });
+
+    const userPayload = users.map((u) => ({
+      ...u,
+      passkeysCount: countMap[String(u._id)] || 0,
+      primaryRole: u.roles?.[0] || 'employee',
+    }));
+
+    sendSuccess(res, userPayload);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    sendError(res, 'Failed to fetch user directory.', 500, 'USER_FETCH_ERROR', errMsg);
+  }
+};
+
+/**
+ * 11. Admin: Update User Role (`PATCH /api/v1/auth/users/:id/role`)
+ */
+export const updateUserRoleHandler = async (req: Request, res: Response): Promise<void> => {
+  const { ipAddress, userAgent } = getClientInfo(req);
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    const validRoles = [
+      'admin',
+      'hr_manager',
+      'hr',
+      'executive',
+      'dept_manager',
+      'manager',
+      'team_lead',
+      'team-lead',
+      'employee',
+    ];
+
+    if (!role || !validRoles.includes(role)) {
+      sendError(res, `Invalid role. Must be one of: ${validRoles.join(', ')}`, 400);
+      return;
+    }
+
+    const user = await UserModel.findById(id);
+    if (!user) {
+      sendError(res, 'User not found.', 404);
+      return;
+    }
+
+    const previousRole = user.roles?.[0] || 'employee';
+    user.roles = [role as any, 'employee'];
+    await user.save();
+
+    await AuthAuditLogModel.create({
+      userId: user._id,
+      username: user.username,
+      action: 'role_update',
+      success: true,
+      ipAddress,
+      userAgent,
+    });
+
+    sendSuccess(
+      res,
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        displayName: user.displayName,
+        roles: user.roles,
+        previousRole,
+        newRole: role,
+      },
+      `User role updated to ${role} successfully.`
+    );
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    sendError(res, 'Failed to update user role.', 500, 'ROLE_UPDATE_ERROR', errMsg);
   }
 };

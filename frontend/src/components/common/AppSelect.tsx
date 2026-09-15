@@ -3,6 +3,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent, SelectProps } from '@mui/material/Select';
+import { SxProps, Theme } from '@mui/material/styles';
 
 export interface SelectOption<T = string | number> {
   label: string;
@@ -16,6 +17,8 @@ export interface AppSelectProps<T = string | number> extends Omit<SelectProps<T>
   helperText?: string;
   onChange?: (value: T) => void;
   formControlProps?: FormControlProps;
+  sx?: SxProps<Theme>;
+  className?: string;
 }
 
 export const AppSelect = <T extends string | number>({
@@ -28,7 +31,9 @@ export const AppSelect = <T extends string | number>({
   onChange,
   formControlProps,
   size = 'small',
-  fullWidth = true,
+  fullWidth = false,
+  sx,
+  className,
   ...rest
 }: AppSelectProps<T>) => {
   const labelId = `select-label-${label.replace(/\s+/g, '-').toLowerCase()}`;
@@ -43,6 +48,8 @@ export const AppSelect = <T extends string | number>({
       fullWidth={fullWidth}
       error={error}
       disabled={disabled}
+      className={className}
+      sx={{ minWidth: 140, ...sx }}
       {...formControlProps}
     >
       <InputLabel id={labelId}>{label}</InputLabel>

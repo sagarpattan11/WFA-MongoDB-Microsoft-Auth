@@ -9,7 +9,8 @@ export type AuthAction =
   | 'login_failure'
   | 'logout'
   | 'credential_rename'
-  | 'credential_revoke';
+  | 'credential_revoke'
+  | 'role_update';
 
 export interface IAuthAuditLog extends Document {
   _id: Types.ObjectId;

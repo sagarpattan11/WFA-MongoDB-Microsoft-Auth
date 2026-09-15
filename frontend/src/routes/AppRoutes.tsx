@@ -8,6 +8,7 @@ import { AnalyticsPage } from '../features/analytics/pages/AnalyticsPage';
 import { AttendanceCorrectionsPage } from '../features/attendance/pages/AttendanceCorrectionsPage';
 import { AttendanceHistoryPage } from '../features/attendance/pages/AttendanceHistoryPage';
 import { AttendancePage } from '../features/attendance/pages/AttendancePage';
+import { AttritionPredictionPage } from '../features/attrition/pages/AttritionPredictionPage';
 import { AuditLogsPage } from '../features/audit/pages/AuditLogsPage';
 import { AuthCallbackPage } from '../features/auth/pages/AuthCallbackPage';
 import { LoginPage } from '../features/auth/pages/LoginPage';
@@ -16,11 +17,16 @@ import { DashboardOverviewPage } from '../features/dashboard/pages/DashboardOver
 import { EmployeeDashboardPage } from '../features/employee/pages/EmployeeDashboardPage';
 import { EmployeeDetailPage } from '../features/employees/pages/EmployeeDetailPage';
 import { EmployeesPage } from '../features/employees/pages/EmployeesPage';
+import { ExecutiveCockpitPage } from '../features/executive/pages/ExecutiveCockpitPage';
+import { WorkforceForecastingPage } from '../features/forecasting/pages/WorkforceForecastingPage';
 import { HrDashboardPage } from '../features/hr/pages/HrDashboardPage';
+import { LearningAnalyticsPage } from '../features/learning/pages/LearningAnalyticsPage';
 import { ManagerDashboardPage } from '../features/manager/pages/ManagerDashboardPage';
 import { NotificationsPage } from '../features/notifications/pages/NotificationsPage';
 import { PayrollPage } from '../features/payroll/pages/PayrollPage';
+import { PlacementAnalyticsPage } from '../features/placement/pages/PlacementAnalyticsPage';
 import { ProfilePage } from '../features/profile/pages/ProfilePage';
+import { RecruitmentAnalyticsPage } from '../features/recruitment/pages/RecruitmentAnalyticsPage';
 import { ReportsPage } from '../features/reports/pages/ReportsPage';
 import { AbsenceCalendarPage } from '../features/scheduling/pages/AbsenceCalendarPage';
 import { AbsencePage } from '../features/scheduling/pages/AbsencePage';
@@ -58,6 +64,14 @@ export const AppRoutes: React.FC = () => {
 
           {/* Core Overview */}
           <Route path="/dashboard" element={<DashboardOverviewPage />} />
+          <Route
+            path="/executive"
+            element={
+              <RequireRole permissions={['analytics:view']}>
+                <ExecutiveCockpitPage />
+              </RequireRole>
+            }
+          />
 
           {/* Role-Specific Dashboards */}
           <Route
@@ -118,6 +132,48 @@ export const AppRoutes: React.FC = () => {
             element={
               <RequireRole permissions={['skills:view']}>
                 <SkillAnalyticsPage />
+              </RequireRole>
+            }
+          />
+
+          {/* Sprint 2 Modules: Placement, Recruitment, Learning Analytics */}
+          <Route
+            path="/placement"
+            element={
+              <RequireRole permissions={['employee:view']}>
+                <PlacementAnalyticsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/recruitment"
+            element={
+              <RequireRole permissions={['employee:view']}>
+                <RecruitmentAnalyticsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/learning"
+            element={
+              <RequireRole permissions={['skills:view']}>
+                <LearningAnalyticsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/attrition"
+            element={
+              <RequireRole permissions={['analytics:view']}>
+                <AttritionPredictionPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/forecasting"
+            element={
+              <RequireRole permissions={['analytics:view']}>
+                <WorkforceForecastingPage />
               </RequireRole>
             }
           />

@@ -3,6 +3,7 @@ import { requireAuth } from '../../middleware/auth.middleware';
 import {
   getCredentialsHandler,
   getMeHandler,
+  listUsersHandler,
   loginChallengeHandler,
   loginVerifyHandler,
   logoutHandler,
@@ -10,6 +11,7 @@ import {
   registerVerifyHandler,
   renameCredentialHandler,
   revokeCredentialHandler,
+  updateUserRoleHandler,
 } from './auth.controller';
 
 const router = Router();
@@ -30,5 +32,9 @@ router.post('/logout', logoutHandler);
 router.get('/credentials', requireAuth, getCredentialsHandler);
 router.patch('/credentials/:id', requireAuth, renameCredentialHandler);
 router.delete('/credentials/:id', requireAuth, revokeCredentialHandler);
+
+// User & Role Management (Protected)
+router.get('/users', requireAuth, listUsersHandler);
+router.patch('/users/:id/role', requireAuth, updateUserRoleHandler);
 
 export const authRouter = router;

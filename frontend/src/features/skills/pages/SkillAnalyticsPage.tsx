@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   GraduationCap,
   RefreshCw,
-  Sparkles,
   TrendingUp,
 } from 'lucide-react';
 import Alert from '@mui/material/Alert';
@@ -143,13 +142,6 @@ export const SkillAnalyticsPage: React.FC = () => {
             <Typography variant="h5" component="h1" fontWeight={700}>
               Skill Analytics & Intelligence
             </Typography>
-            <Chip
-              icon={<Sparkles size={14} />}
-              label="Sprint 1 Live Module"
-              color="primary"
-              size="small"
-              sx={{ fontWeight: 600 }}
-            />
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Workforce skill distribution, departmental gap analysis, certifications, and training recommendations.

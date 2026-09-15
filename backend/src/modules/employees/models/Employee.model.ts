@@ -17,19 +17,19 @@ export interface IEmployee extends Document {
   email: string;
   phone?: string;
   departmentId: Types.ObjectId;
-  teamId?: Types.ObjectId;
+  teamId?: Types.ObjectId | null;
   jobTitle: string;
   employmentType: EmploymentType;
   status: EmployeeStatus;
   location: WorkLocation;
   hireDate: Date;
-  exitDate?: Date;
+  exitDate?: Date | null;
   experienceYears: number;
   skills: IEmployeeSkill[];
   certifications: string[];
   salary?: number;
   isDeleted: boolean;
-  deletedAt?: Date;
+  deletedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

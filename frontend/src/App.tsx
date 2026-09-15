@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { store } from './app/store';
 import { ErrorBoundary } from './components/feedback/ErrorBoundary';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { AppRoutes } from './routes/AppRoutes';
 import { AppThemeProvider } from './theme/ThemeProvider';
 
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
         <QueryClientProvider client={queryClient}>
           <AppThemeProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <AppRoutes />
             </BrowserRouter>
           </AppThemeProvider>

@@ -10,10 +10,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
@@ -33,7 +29,6 @@ export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [displayName, setDisplayName] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<string>('hr_manager');
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -96,9 +91,7 @@ export const LoginPage: React.FC = () => {
       const user = await registerWithPasskey(
         username.trim(),
         email.trim(),
-        displayName.trim() || undefined,
-        undefined,
-        selectedRole
+        displayName.trim() || undefined
       );
 
       dispatch(
@@ -120,6 +113,8 @@ export const LoginPage: React.FC = () => {
       const errorObj = err as { name?: string; message?: string; response?: { data?: { error?: { message?: string } } } };
       if (errorObj.name === 'NotAllowedError') {
         setErrorMsg('Registration prompt was cancelled.');
+      } else if (errorObj.name === 'InvalidStateError' || errorObj.message?.includes('excludeCredentials') || errorObj.message?.includes('already registered')) {
+        setErrorMsg('A passkey for this username/email is already registered on your device. Please switch to the "Sign In" tab to log in.');
       } else {
         setErrorMsg(
           errorObj.response?.data?.error?.message ||
@@ -222,7 +217,7 @@ export const LoginPage: React.FC = () => {
             required
             size="small"
             label="Corporate Username"
-            placeholder="e.g. hr.manager or your name"
+            placeholder="e.g. sarah.jenkins or your name"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             disabled={loading}
@@ -235,7 +230,7 @@ export const LoginPage: React.FC = () => {
             type="email"
             size="small"
             label="Corporate Email"
-            placeholder="e.g. hr@company.com"
+            placeholder="e.g. employee@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
@@ -246,30 +241,12 @@ export const LoginPage: React.FC = () => {
             fullWidth
             size="small"
             label="Full Name (Display Name)"
-            placeholder="e.g. Sarah Jenkins (HR Lead)"
+            placeholder="e.g. Sarah Jenkins"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             disabled={loading}
-            sx={{ mb: 2 }}
+            sx={{ mb: 2.5 }}
           />
-
-          <FormControl fullWidth size="small" sx={{ mb: 2.5 }}>
-            <InputLabel id="role-select-label">Select Workspace Role</InputLabel>
-            <Select
-              labelId="role-select-label"
-              value={selectedRole}
-              label="Select Workspace Role"
-              onChange={(e) => setSelectedRole(e.target.value)}
-              disabled={loading}
-            >
-              <MenuItem value="hr_manager">HR Manager (Full Workforce & Skill Analytics)</MenuItem>
-              <MenuItem value="admin">System Admin (Full Access & Settings)</MenuItem>
-              <MenuItem value="executive">Executive / VP (Strategic Analytics)</MenuItem>
-              <MenuItem value="dept_manager">Department Manager (Team Analytics)</MenuItem>
-              <MenuItem value="team_lead">Team Lead (Operational Visibility)</MenuItem>
-              <MenuItem value="employee">Employee (Self-Service View)</MenuItem>
-            </Select>
-          </FormControl>
 
           <Button
             type="submit"
