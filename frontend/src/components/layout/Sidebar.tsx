@@ -76,22 +76,17 @@ export const Sidebar: React.FC = () => {
           >
             {/* Logo Icon */}
             <Box
+              component="img"
+              src="/Stackly_logo.png"
+              alt="Stackly Logo"
               sx={{
                 width: 36,
                 height: 36,
-                borderRadius: 2,
-                bgcolor: 'primary.main',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '1rem',
+                objectFit: 'contain',
+                borderRadius: 1,
                 flexShrink: 0,
               }}
-            >
-              W
-            </Box>
+            />
 
             {!isCollapsed && (
               <Box sx={{ overflow: 'hidden' }}>

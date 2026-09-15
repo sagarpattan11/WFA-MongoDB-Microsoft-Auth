@@ -25,10 +25,11 @@ export type Permission =
 
 export interface UserProfile {
   id: string;
+  username?: string;
   email: string;
   displayName: string;
   roles: UserRole[];
-  permissions: Permission[];
+  permissions?: Permission[];
   department?: string;
   jobTitle?: string;
   avatarUrl?: string;

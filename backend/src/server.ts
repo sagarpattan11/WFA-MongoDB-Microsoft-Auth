@@ -1,33 +1,39 @@
 import http from 'http';
 import { createApp } from './app';
-import { env, validateExternalModuleConfig } from './config/env.config';
+import { connectDatabase, disconnectDatabase } from './config/database';
+import { env } from './config/env.config';
 import { logger } from './config/logger';
+import { seedDatabase } from './scripts/seed';
 import { initializeSocketIO } from './sockets/socket.server';
 
-const startServer = (): void => {
+const startServer = async (): Promise<void> => {
+  // 1. Connect to MongoDB
+  await connectDatabase();
+
+  // 2. Seed initial data if DB is empty
+  await seedDatabase();
+
   const app = createApp();
   const httpServer = http.createServer(app);
 
-  // Initialize Socket.IO
+  // 3. Initialize Socket.IO
   const io = initializeSocketIO(httpServer);
-
-  // Diagnostic checks for future modules
-  validateExternalModuleConfig('mongodb');
-  validateExternalModuleConfig('microsoft');
 
   const server = httpServer.listen(env.PORT, () => {
     logger.info(`🚀 WFA Backend API running on port ${env.PORT} in ${env.NODE_ENV} mode`);
     logger.info(`🏥 Health check available at: http://localhost:${env.PORT}/api/v1/health`);
+    logger.info(`🔑 WebAuthn Relying Party: ${env.RP_NAME} (ID: ${env.RP_ID})`);
   });
 
   // Graceful shutdown handling
-  const shutdown = (signal: string) => {
+  const shutdown = async (signal: string) => {
     logger.info(`🛑 Received ${signal}. Initiating graceful shutdown...`);
 
-    server.close(() => {
+    server.close(async () => {
       logger.info('HTTP server closed.');
-      io.close(() => {
+      io.close(async () => {
         logger.info('Socket.IO connections closed.');
+        await disconnectDatabase();
         process.exit(0);
       });
     });

@@ -94,7 +94,7 @@ export const hasAnyRole = (user: UserProfile | null, roles: UserRole[]): boolean
 export const hasPermission = (user: UserProfile | null, permission: Permission): boolean => {
   if (!user) return false;
   // If user has direct permission list or inherits from their roles
-  if (user.permissions.includes(permission)) return true;
+  if (user.permissions && user.permissions.includes(permission)) return true;
   return user.roles.some((role) => ROLE_PERMISSIONS[role]?.includes(permission));
 };
 

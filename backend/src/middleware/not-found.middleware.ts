@@ -1,11 +1,11 @@
-import { Request, Response } from 'express';
+import { RequestHandler } from 'express';
 import { sendError } from '../utils/api-response';
 
-export const notFoundMiddleware = (req: Request, res: Response): void => {
+export const notFoundMiddleware: RequestHandler = (req, res) => {
   sendError(
     res,
-    'ROUTE_NOT_FOUND',
-    `Endpoint [${req.method}] ${req.originalUrl} does not exist on this server.`,
-    404
+    `Cannot find endpoint [${req.method}] ${req.originalUrl} on WFA API server`,
+    404,
+    'ROUTE_NOT_FOUND'
   );
 };

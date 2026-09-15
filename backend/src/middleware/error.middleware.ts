@@ -11,9 +11,9 @@ export const errorMiddleware: ErrorRequestHandler = (err, req, res, _next) => {
   if (err instanceof ZodError) {
     sendError(
       res,
-      'VALIDATION_ERROR',
       'Input validation failed',
       422,
+      'VALIDATION_ERROR',
       err.errors.map((e) => ({
         path: e.path.join('.'),
         message: e.message,
@@ -24,7 +24,7 @@ export const errorMiddleware: ErrorRequestHandler = (err, req, res, _next) => {
 
   // Handle CORS errors
   if (err.message && err.message.includes('CORS policy')) {
-    sendError(res, 'CORS_ERROR', err.message, 403);
+    sendError(res, err.message, 403, 'CORS_ERROR');
     return;
   }
 
@@ -37,9 +37,9 @@ export const errorMiddleware: ErrorRequestHandler = (err, req, res, _next) => {
 
   sendError(
     res,
-    err.code || 'INTERNAL_SERVER_ERROR',
     message,
     statusCode,
+    err.code || 'INTERNAL_SERVER_ERROR',
     env.NODE_ENV === 'development' ? err.stack : undefined
   );
 };

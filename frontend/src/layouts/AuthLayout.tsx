@@ -23,23 +23,16 @@ export const AuthLayout: React.FC = () => {
         {/* Brand Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Box
+            component="img"
+            src="/Stackly_logo.png"
+            alt="Stackly Logo"
             sx={{
-              width: 52,
-              height: 52,
-              borderRadius: 3,
-              bgcolor: 'primary.main',
-              color: '#ffffff',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '1.5rem',
+              height: 56,
+              maxWidth: 200,
+              objectFit: 'contain',
               mb: 1.5,
-              boxShadow: (theme) => theme.shadows[4],
             }}
-          >
-            W
-          </Box>
+          />
           <Typography variant="h4" component="h1" fontWeight={700} color="text.primary">
             Workforce Analytics Platform
           </Typography>

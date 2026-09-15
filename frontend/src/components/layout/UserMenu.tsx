@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { logoutUserSession } from '../../auth/webauthn.service';
 import { logout } from '../../store/slices/authSlice';
 
 export const UserMenu: React.FC = () => {
@@ -36,8 +37,13 @@ export const UserMenu: React.FC = () => {
     navigate(path);
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     handleClose();
+    try {
+      await logoutUserSession();
+    } catch {
+      // Ignore network errors on logout
+    }
     // Dispatch logout to clear session state in Redux
     dispatch(logout());
     // Redirect cleanly to login screen
@@ -62,7 +68,7 @@ export const UserMenu: React.FC = () => {
       >
         <Avatar
           src={user?.avatarUrl}
-          sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.9rem', fontWeight: 600 }}
+          sx={{ width: 34, height: 34, bgcolor: '#0F6CBD', fontSize: '0.9rem', fontWeight: 600 }}
         >
           {initial}
         </Avatar>
@@ -116,7 +122,7 @@ export const UserMenu: React.FC = () => {
           <ListItemIcon>
             <Settings size={18} />
           </ListItemIcon>
-          <ListItemText primary="Preferences" />
+          <ListItemText primary="Preferences & Passkeys" />
         </MenuItem>
 
         <Divider />

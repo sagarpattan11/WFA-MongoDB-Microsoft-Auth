@@ -21,7 +21,7 @@ describe('Layout Components (Header & Sidebar)', () => {
     );
 
     expect(screen.getByLabelText(/Toggle navigation sidebar/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Toggle theme mode/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Toggle visual theme/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/View notifications/i)).toBeInTheDocument();
   });
 

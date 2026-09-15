@@ -8,18 +8,15 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('5000').transform((val) => parseInt(val, 10)),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
-  SESSION_SECRET: z.string().default('wfa-session-secret-change-in-production'),
+  SESSION_SECRET: z.string().default('wfa-passkey-session-secret-enterprise-grade'),
   
-  // Optional database URI
-  MONGODB_URI: z.string().optional(),
+  // MongoDB Connection URI
+  MONGODB_URI: z.string().default('mongodb://localhost:27017/wfa_db'),
 
-  // Optional Microsoft Entra ID variables
-  MICROSOFT_CLIENT_ID: z.string().optional(),
-  MICROSOFT_CLIENT_SECRET: z.string().optional(),
-  MICROSOFT_TENANT_ID: z.string().optional(),
-  MICROSOFT_REDIRECT_URI: z.string().optional(),
-  MICROSOFT_POST_LOGOUT_REDIRECT_URI: z.string().optional(),
-  MICROSOFT_ALLOWED_EMAIL_DOMAIN: z.string().optional(),
+  // WebAuthn / Passkey Relying Party configuration
+  RP_NAME: z.string().default('Workforce Analytics Platform'),
+  RP_ID: z.string().default('localhost'),
+  ORIGIN: z.string().default('http://localhost:3000'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
@@ -37,33 +34,3 @@ const parseEnv = (): EnvConfig => {
 };
 
 export const env = parseEnv();
-
-/**
- * Diagnostic helper to verify whether optional external services are configured.
- */
-export const validateExternalModuleConfig = (module: 'mongodb' | 'microsoft'): boolean => {
-  if (module === 'mongodb') {
-    if (!env.MONGODB_URI) {
-      console.warn('⚠️ MongoDB configuration is missing (MONGODB_URI). Active persistence pending.');
-      return false;
-    }
-    return true;
-  }
-
-  if (module === 'microsoft') {
-    const isConfigured = Boolean(
-      env.MICROSOFT_CLIENT_ID &&
-      env.MICROSOFT_CLIENT_SECRET &&
-      env.MICROSOFT_TENANT_ID &&
-      env.MICROSOFT_REDIRECT_URI
-    );
-
-    if (!isConfigured) {
-      console.warn('⚠️ Microsoft Entra ID credentials are incomplete. SSO module will operate in standby mode.');
-      return false;
-    }
-    return true;
-  }
-
-  return false;
-};
