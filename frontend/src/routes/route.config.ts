@@ -1,6 +1,7 @@
 import {
   Activity,
   AlertCircle,
+  Award,
   BarChart3,
   Bell,
   Calendar,
@@ -90,6 +91,15 @@ export const APP_ROUTES: RouteMetadata[] = [
     navGroup: 'Workforce',
     showInSidebar: true,
     requiredPermissions: ['employee:view'],
+  },
+  {
+    path: '/skills',
+    title: 'Skill Analytics & Intelligence',
+    breadcrumbLabel: 'Skill Analytics',
+    icon: Award,
+    navGroup: 'Workforce',
+    showInSidebar: true,
+    requiredPermissions: ['skills:view'],
   },
   {
     path: '/employees/:id',

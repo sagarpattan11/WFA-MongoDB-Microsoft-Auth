@@ -37,6 +37,22 @@ export const API_ENDPOINTS = {
     CREATE: '/teams',
   },
 
+  // Locations & Roles
+  LOCATIONS: {
+    LIST: '/locations',
+  },
+  ROLES: {
+    LIST: '/roles',
+  },
+
+  // Skill Analytics & Recommendations
+  SKILLS: {
+    LIST: '/skills',
+    OVERVIEW: '/skills/analytics/overview',
+    GAPS: '/skills/analytics/gaps',
+    RECOMMENDATIONS: '/skills/analytics/recommendations',
+  },
+
   // Dashboard Telemetry & Charts
   DASHBOARD: {
     KPIS: '/dashboard/kpis',

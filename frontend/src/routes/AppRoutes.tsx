@@ -28,6 +28,7 @@ import { SchedulingPage } from '../features/scheduling/pages/SchedulingPage';
 import { ShiftsPage } from '../features/scheduling/pages/ShiftsPage';
 import { SwapsPage } from '../features/scheduling/pages/SwapsPage';
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
+import { SkillAnalyticsPage } from '../features/skills/pages/SkillAnalyticsPage';
 import { TeamLeadDashboardPage } from '../features/team-lead/pages/TeamLeadDashboardPage';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { MainLayout } from '../layouts/MainLayout';
@@ -70,7 +71,7 @@ export const AppRoutes: React.FC = () => {
           <Route
             path="/hr/dashboard"
             element={
-              <RequireRole roles={['admin', 'hr']}>
+              <RequireRole roles={['admin', 'hr', 'hr_manager']}>
                 <HrDashboardPage />
               </RequireRole>
             }
@@ -78,7 +79,7 @@ export const AppRoutes: React.FC = () => {
           <Route
             path="/manager/dashboard"
             element={
-              <RequireRole roles={['admin', 'hr', 'manager']}>
+              <RequireRole roles={['admin', 'hr', 'hr_manager', 'manager', 'dept_manager']}>
                 <ManagerDashboardPage />
               </RequireRole>
             }
@@ -86,7 +87,7 @@ export const AppRoutes: React.FC = () => {
           <Route
             path="/team-lead/dashboard"
             element={
-              <RequireRole roles={['admin', 'hr', 'manager', 'team-lead']}>
+              <RequireRole roles={['admin', 'hr', 'hr_manager', 'manager', 'dept_manager', 'team_lead', 'team-lead']}>
                 <TeamLeadDashboardPage />
               </RequireRole>
             }
@@ -110,6 +111,17 @@ export const AppRoutes: React.FC = () => {
               </RequireRole>
             }
           />
+
+          {/* Skill Analytics & Intelligence (Sprint 1 Module) */}
+          <Route
+            path="/skills"
+            element={
+              <RequireRole permissions={['skills:view']}>
+                <SkillAnalyticsPage />
+              </RequireRole>
+            }
+          />
+
           <Route
             path="/attendance"
             element={

@@ -33,7 +33,7 @@ const getDeviceFriendlyName = (req: Request): string => {
 export const registerChallengeHandler = async (req: Request, res: Response): Promise<void> => {
   const { ipAddress, userAgent } = getClientInfo(req);
   try {
-    const { username, email, displayName } = req.body;
+    const { username, email, displayName, role } = req.body;
 
     if (!username || !email) {
       sendError(res, 'Username and corporate email are required.', 400);
@@ -43,6 +43,10 @@ export const registerChallengeHandler = async (req: Request, res: Response): Pro
     const cleanUsername = String(username).toLowerCase().trim();
     const cleanEmail = String(email).toLowerCase().trim();
     const cleanDisplayName = displayName ? String(displayName).trim() : cleanUsername;
+
+    const assignedRoles = role
+      ? [String(role), 'employee']
+      : ['admin', 'hr_manager', 'hr', 'manager', 'dept_manager', 'team_lead', 'team-lead', 'employee'];
 
     // Check if user already exists, or prepare for new user creation
     let user = await UserModel.findOne({
@@ -54,8 +58,10 @@ export const registerChallengeHandler = async (req: Request, res: Response): Pro
         username: cleanUsername,
         email: cleanEmail,
         displayName: cleanDisplayName,
-        roles: ['admin', 'hr', 'manager', 'team-lead', 'employee'],
+        roles: assignedRoles,
       });
+    } else if (role) {
+      user.roles = assignedRoles as unknown as ('admin' | 'hr_manager' | 'hr' | 'executive' | 'dept_manager' | 'manager' | 'team_lead' | 'team-lead' | 'employee')[];
     }
 
     // Retrieve existing passkeys for this user to avoid duplicate registrations on same authenticator

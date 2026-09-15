@@ -1,6 +1,15 @@
 import { Document, Schema, model, Types } from 'mongoose';
 
-export type UserRole = 'admin' | 'hr' | 'manager' | 'team-lead' | 'employee';
+export type UserRole =
+  | 'admin'
+  | 'hr_manager'
+  | 'hr'
+  | 'executive'
+  | 'dept_manager'
+  | 'manager'
+  | 'team_lead'
+  | 'team-lead'
+  | 'employee';
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -38,7 +47,17 @@ const userSchema = new Schema<IUser>(
     },
     roles: {
       type: [String],
-      enum: ['admin', 'hr', 'manager', 'team-lead', 'employee'],
+      enum: [
+        'admin',
+        'hr_manager',
+        'hr',
+        'executive',
+        'dept_manager',
+        'manager',
+        'team_lead',
+        'team-lead',
+        'employee',
+      ],
       default: ['employee'],
     },
     currentChallenge: {

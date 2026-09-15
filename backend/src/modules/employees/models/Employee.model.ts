@@ -4,6 +4,11 @@ export type EmploymentType = 'Full-Time' | 'Part-Time' | 'Contractor' | 'Intern'
 export type EmployeeStatus = 'active' | 'on-leave' | 'probation' | 'terminated';
 export type WorkLocation = 'Headquarters' | 'Remote' | 'Regional Office' | 'Branch Office';
 
+export interface IEmployeeSkill {
+  skillName: string;
+  proficiencyLevel: number; // 1 to 5
+}
+
 export interface IEmployee extends Document {
   _id: Types.ObjectId;
   employeeId: string;
@@ -18,6 +23,10 @@ export interface IEmployee extends Document {
   status: EmployeeStatus;
   location: WorkLocation;
   hireDate: Date;
+  exitDate?: Date;
+  experienceYears: number;
+  skills: IEmployeeSkill[];
+  certifications: string[];
   salary?: number;
   isDeleted: boolean;
   deletedAt?: Date;
@@ -96,6 +105,21 @@ const employeeSchema = new Schema<IEmployee>(
       type: Date,
       default: Date.now,
     },
+    exitDate: {
+      type: Date,
+    },
+    experienceYears: {
+      type: Number,
+      default: 2,
+      min: 0,
+    },
+    skills: [
+      {
+        skillName: { type: String, required: true },
+        proficiencyLevel: { type: Number, required: true, min: 1, max: 5, default: 3 },
+      },
+    ],
+    certifications: [{ type: String, trim: true }],
     salary: {
       type: Number,
       default: 0,
@@ -117,5 +141,6 @@ const employeeSchema = new Schema<IEmployee>(
 
 // Compound indexes for search & sorting
 employeeSchema.index({ firstName: 'text', lastName: 'text', email: 'text', jobTitle: 'text' });
+employeeSchema.index({ status: 1, departmentId: 1, isDeleted: 1 });
 
 export const EmployeeModel = model<IEmployee>('Employee', employeeSchema);
